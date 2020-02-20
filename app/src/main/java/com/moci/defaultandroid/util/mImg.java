@@ -184,6 +184,13 @@ public class mImg {
         return returnBm;
     }
 
+    public static byte[] bitmapToByte(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] imgBytes = baos.toByteArray();
+        return imgBytes;
+    }
+
     public static void write(byte[] mImage, File mImageFile){
         try {
             FileOutputStream fos = new FileOutputStream(mImageFile);
