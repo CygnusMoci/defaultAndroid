@@ -4,15 +4,20 @@ import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.TypedValue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +25,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -88,6 +94,33 @@ public class mImg {
         ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//把压缩后的数据baos存放到ByteArrayInputStream中
         Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//把ByteArrayInputStream数据生成图片
         return bitmap;
+    }
+
+    public static Bitmap decodeResource(final String name){
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                String fileName = "/res/drawable/";
+                getClass().getResourceAsStream(fileName+name);
+                return -1;
+            }
+        };
+        Bitmap res = BitmapFactory.decodeStream(inputStream);
+        return res;
+    }
+
+    /**
+     * 解析bitmap资源，不会缩放
+     * @param resources
+     * @param id
+     * @return
+     */
+    public static Bitmap decodeResource(Resources resources, int id) {
+        TypedValue value = new TypedValue();
+        resources.openRawResource(id, value);
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inTargetDensity = value.density;
+        return BitmapFactory.decodeResource(resources, id, opts);
     }
 
     public static Bitmap proccessImage(String srcPath){
@@ -192,19 +225,64 @@ public class mImg {
         return imgBytes;
     }
 
+    /**
+     * RGB 解析
+     * @param image
+     * @return
+     */
+    public static byte[] getPixelsRGB(Bitmap image){
+        int bytes = image.getByteCount();  //返回可用于储存此位图像素的最小字节数
+        ByteBuffer buffer = ByteBuffer.allocate(bytes); //  使用allocate()静态方法创建字节缓冲区
+        image.copyPixelsToBuffer(buffer); // 将位图的像素复制到指定的缓冲区
+        byte[] rgba = buffer.array();
+        byte[] pixels = new byte[(rgba.length / 4) * 3];
+        int count = rgba.length / 4;
+        //Bitmap像素点的色彩通道排列顺序是RGBA
+        for (int i = 0; i < count; i++) {
+            pixels[i * 3] = rgba[i * 4];        //R
+            pixels[i * 3 + 1] = rgba[i * 4 + 1];    //G
+            pixels[i * 3 + 2] = rgba[i * 4 + 2];       //B
+        }
+        return pixels;
+    }
 
     /**
-     * RGB的bitmap转RGBA
+     * Gray 解析
+     * @param bitmap
+     * @return
+     */
+    public static byte[] getPixelsGray(Bitmap bitmap){
+        if (bitmap == null)
+            return null;
+
+        byte[] ret = new byte[bitmap.getWidth() * bitmap.getHeight()];
+        for (int j = 0; j < bitmap.getHeight(); ++j)
+            for (int i = 0; i < bitmap.getWidth(); ++i) {
+                int pixel = bitmap.getPixel(i, j);
+                int red = ((pixel & 0x00FF0000) >> 16);
+                int green = ((pixel & 0x0000FF00) >> 8);
+                int blue = pixel & 0x000000FF;
+                ret[j * bitmap.getWidth() + i] = (byte) ((299 * red + 587 * green + 114 * blue) / 1000);
+            }
+        return ret;
+    }
+
+    /**
+     * RGBA 解析
      * @param image
      * @return
      */
     public static byte[] getPixelsRGBA(Bitmap image) {
         // calculate how many bytes our image consists of
         int bytes = image.getByteCount();
+
         ByteBuffer buffer = ByteBuffer.allocate(bytes); // Create a new buffer
         image.copyPixelsToBuffer(buffer); // Move the byte data to the buffer
+
         byte[] temp = buffer.array(); // Get the underlying array containing the data.
+
         byte[] pixels = new byte[temp.length]; // Allocate for RGBA
+
         // Copy pixels into place
         for (int i = 0; i < (temp.length / 4); i++) {
             pixels[i * 4 + 0] = temp[i * 4 + 0];       //R
@@ -212,16 +290,18 @@ public class mImg {
             pixels[i * 4 + 2] = temp[i * 4 + 2];       //B
             pixels[i * 4 + 3] = temp[i * 4 + 3];       //A
         }
+
         return pixels;
     }
 
+
     /**
-     * RGB的bitmap图转YUV21
+     * bitmap解析YUV21
      * @param bitmap
      * @return
      */
-    public static byte[] convertYUV21FromRGB(Bitmap bitmap){
-        bitmap = rotaingImageView(90, bitmap);
+    public static byte[] convertYUV21FromRGB(Bitmap bitmap,int rotation){
+        bitmap = rotaingImageView(rotation, bitmap);
 
         int inputWidth = bitmap.getWidth();
         int inputHeight = bitmap.getHeight();
@@ -240,12 +320,17 @@ public class mImg {
 
     }
 
+    public static byte[] convertYUV21FromRGB(Bitmap bitmap){
+        return  convertYUV21FromRGB(bitmap,0);
+    }
+
+
     private static void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width, int height) {
         final int frameSize = width * height;
 
         int yIndex = 0;
         int uvIndex = frameSize;
-
+        int maxSize = yuv420sp.length;
         int a, R, G, B, Y, U, V;
         int index = 0;
         for (int j = 0; j < height; j++) {
@@ -265,16 +350,69 @@ public class mImg {
                 //    meaning for every 4 Y pixels there are 1 V and 1 U.  Note the sampling is every other
                 //    pixel AND every other scanline.
                 yuv420sp[yIndex++] = (byte) ((Y < 0) ? 0 : ((Y > 255) ? 255 : Y));
+
+
                 if (j % 2 == 0 && index % 2 == 0) {
                     yuv420sp[uvIndex++] = (byte) ((V < 0) ? 0 : ((V > 255) ? 255 : V));
                     yuv420sp[uvIndex++] = (byte) ((U < 0) ? 0 : ((U > 255) ? 255 : U));
                 }
-
                 index++;
+                if(uvIndex >= maxSize) return;
             }
         }
     }
 
+    /**
+     * BGR 解析
+     * @param image
+     * @return
+     */
+    public static byte[] getPixelsBGR(Bitmap image) {
+        // calculate how many bytes our image consists of
+        int bytes = image.getByteCount();
+
+        ByteBuffer buffer = ByteBuffer.allocate(bytes); // Create a new buffer
+        image.copyPixelsToBuffer(buffer); // Move the byte data to the buffer
+
+        byte[] temp = buffer.array(); // Get the underlying array containing the data.
+
+        byte[] pixels = new byte[(temp.length/4) * 3]; // Allocate for BGR
+
+        // Copy pixels into place
+        for (int i = 0; i < temp.length/4; i++) {
+
+            pixels[i * 3] = temp[i * 4 + 2];		//B
+            pixels[i * 3 + 1] = temp[i * 4 + 1]; 	//G
+            pixels[i * 3 + 2] = temp[i * 4 ];		//R
+
+        }
+
+        return pixels;
+    }
+
+    /**
+     * yuv生成Bitmap(rgb格式的)
+     * @param data
+     * @param width
+     * @param height
+     * @return
+     */
+    public static Bitmap getYUVBitmap(byte[] data,int width,int height){
+        try {
+            YuvImage image = new YuvImage(data, ImageFormat.NV21, width, height, null);
+            if(image!=null) {
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                image.compressToJpeg(new Rect(0, 0, width, height), 100, stream);
+                Bitmap bmp = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
+                //TODO：此处可以对位图进行处理，如显示，保存等
+                stream.close();
+                return bmp;
+            }
+        }catch (IOException e){
+            return null;
+        }
+        return null;
+    }
 
     public static void write(byte[] mImage, File mImageFile){
         try {
