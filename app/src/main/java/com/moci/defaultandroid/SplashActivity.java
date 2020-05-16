@@ -6,12 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.Space;
-
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.squareup.leakcanary.LeakCanary;
 
 import static android.os.Build.VERSION_CODES.M;
 
@@ -35,12 +32,6 @@ public class SplashActivity extends Activity {
         }
         setContentView(R.layout.activity_splash);
         mHandler = new Handler();
-        // 安装内存监控软件
-        if(LeakCanary.isInAnalyzerProcess(this)){
-            return;
-        }
-        LeakCanary.install(this.getApplication());
-
         reuqestExternalStorage();
     }
 
