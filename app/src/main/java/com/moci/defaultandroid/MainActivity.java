@@ -38,12 +38,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "main";
     public static final int GALLERY_CODE = 101;
     private mDialog dialog;
     private ProgressDialog mProgressDialog;
     private Handler mHandler;
+    private String content = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button down;
     private Button left;
     private Button right;
-    private Button swcPic;
     private ImageView imageView;
     private TextView logPreview;
     private File file;
@@ -89,17 +89,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         down = findViewById(R.id.down);
         left = findViewById(R.id.left);
         right = findViewById(R.id.right);
-        swcPic = findViewById(R.id.swcPic);
 
         x = imageView.getX();
         y = imageView.getY();
 
         logPreview.setMovementMethod(new ScrollingMovementMethod());
+        imageView.setOnClickListener(this);
         up.setOnClickListener(this);
         down.setOnClickListener(this);
         left.setOnClickListener(this);
         right.setOnClickListener(this);
-        swcPic.setOnClickListener(this);
     }
 
     @Override
@@ -122,14 +121,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 x = x+10;
                 imageView.setX(x);
                 break;
-            case R.id.swcPic:
+            case R.id.imageView:
                 getPicture();
                 break;
         }
-
         wlog("x = "+x+" y = "+y);
     }
-    String content = "";
 
     protected void wlog(String rawMsg){
         String msg = rawMsg+"\n";
