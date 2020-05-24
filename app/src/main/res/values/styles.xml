@@ -2,12 +2,11 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="QMUI.Compat">
-        <!-- Customize your theme here. -->
-        <item name="windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:buttonStyle">@style/Button.Compat</item>
+        <item name="QMUIButtonStyle">@style/MyButton</item>
     </style>
-
+    <style name="MyButton"  parent="QMUI.RoundButton">
+        <item name="android:layout_width">10dp</item>
+        <item name="android:textSize">28dp</item>
+    </style>
 </resources>

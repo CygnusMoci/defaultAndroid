@@ -218,6 +218,40 @@ public class mImg {
         return returnBm;
     }
 
+    /**
+     * 处理非偶数长款图片
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap getEvenWidthHeightBitmap(Bitmap bitmap){
+        Bitmap returnBm = null;
+        int inputWidth = bitmap.getWidth();
+        int inputHeight = bitmap.getHeight();
+        int relWidth = inputWidth;
+        int relHeight = inputHeight;
+        if(inputWidth % 2 == 1){
+            relWidth = inputWidth- 1;
+        }
+        if(inputHeight % 2 == 1){
+            relHeight = inputHeight - 1;
+        }
+        float scaleWidth = ((float) relWidth) / inputWidth;
+        float scaleHeight = ((float) relHeight) / inputHeight;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth,scaleHeight);
+        try {
+            returnBm = Bitmap.createBitmap(bitmap, 0, 0, inputWidth, inputHeight, matrix, true);
+        } catch (OutOfMemoryError e) {
+        }
+        if (returnBm == null) {
+            returnBm = bitmap;
+        }
+        if (bitmap != returnBm) {
+            bitmap.recycle();
+        }
+        return returnBm;
+    }
+
     public static byte[] bitmapToByte(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
@@ -302,7 +336,7 @@ public class mImg {
      */
     public static byte[] convertYUV21FromRGB(Bitmap bitmap,int rotation){
         bitmap = rotaingImageView(rotation, bitmap);
-
+        bitmap = getEvenWidthHeightBitmap(bitmap);
         int inputWidth = bitmap.getWidth();
         int inputHeight = bitmap.getHeight();
 
