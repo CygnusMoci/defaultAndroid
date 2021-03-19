@@ -81,10 +81,14 @@ public class mImg {
         return path;
     }
 
-    //对bitmap进行质量压缩
+    // 对bitmap进行质量压缩
     public static Bitmap compressImage(Bitmap image) {
+        return compressImage(image,100);
+    }
+
+    public static Bitmap compressImage(Bitmap image, int level) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+        image.compress(Bitmap.CompressFormat.JPEG, level, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
         int options = 100;
         while (baos.toByteArray().length / 1024 > 100) {    //循环判断如果压缩后图片是否大于100kb,大于继续压缩
             baos.reset();//重置baos即清空baos
@@ -165,6 +169,19 @@ public class mImg {
         return compressImage(bitmap);//压缩好比例大小后再进行质量压缩
     }
 
+    public static String getVideoTime(Context context, Uri uri, String selection){
+        String time = null;
+        //通过Uri和selection来获取真实的图片路径
+        Cursor cursor = context.getContentResolver().query(uri, null, selection, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                time = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
+            }
+            cursor.close();
+        }
+        return time;
+    }
+
     /**
      * 读取照片旋转角度
      *
@@ -207,40 +224,6 @@ public class mImg {
         try {
             // 将原始图片按照旋转矩阵进行旋转，并得到新的图片
             returnBm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-        } catch (OutOfMemoryError e) {
-        }
-        if (returnBm == null) {
-            returnBm = bitmap;
-        }
-        if (bitmap != returnBm) {
-            bitmap.recycle();
-        }
-        return returnBm;
-    }
-
-    /**
-     * 处理非偶数长款图片
-     * @param bitmap
-     * @return
-     */
-    public static Bitmap getEvenWidthHeightBitmap(Bitmap bitmap){
-        Bitmap returnBm = null;
-        int inputWidth = bitmap.getWidth();
-        int inputHeight = bitmap.getHeight();
-        int relWidth = inputWidth;
-        int relHeight = inputHeight;
-        if(inputWidth % 2 == 1){
-            relWidth = inputWidth- 1;
-        }
-        if(inputHeight % 2 == 1){
-            relHeight = inputHeight - 1;
-        }
-        float scaleWidth = ((float) relWidth) / inputWidth;
-        float scaleHeight = ((float) relHeight) / inputHeight;
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth,scaleHeight);
-        try {
-            returnBm = Bitmap.createBitmap(bitmap, 0, 0, inputWidth, inputHeight, matrix, true);
         } catch (OutOfMemoryError e) {
         }
         if (returnBm == null) {
@@ -334,9 +317,10 @@ public class mImg {
      * @param bitmap
      * @return
      */
-    public static byte[] convertYUV21FromRGB(Bitmap bitmap,int rotation){
+    public static byte[] getPixelsYUV21(Bitmap bitmap,int rotation){
         bitmap = rotaingImageView(rotation, bitmap);
         bitmap = getEvenWidthHeightBitmap(bitmap);
+
         int inputWidth = bitmap.getWidth();
         int inputHeight = bitmap.getHeight();
 
@@ -348,14 +332,12 @@ public class mImg {
 
         encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
 
-        bitmap.recycle();
-
         return yuv;
 
     }
 
-    public static byte[] convertYUV21FromRGB(Bitmap bitmap){
-        return  convertYUV21FromRGB(bitmap,0);
+    public static byte[] getPixelsYUV21(Bitmap bitmap){
+        return  getPixelsYUV21(bitmap,0);
     }
 
 
@@ -394,6 +376,40 @@ public class mImg {
                 if(uvIndex >= maxSize) return;
             }
         }
+    }
+
+    /**
+     * 处理非偶数长款图片
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap getEvenWidthHeightBitmap(Bitmap bitmap){
+        Bitmap returnBm = null;
+        int inputWidth = bitmap.getWidth();
+        int inputHeight = bitmap.getHeight();
+        int relWidth = inputWidth;
+        int relHeight = inputHeight;
+        if(inputWidth % 2 == 1){
+            relWidth = inputWidth- 1;
+        }
+        if(inputHeight % 2 == 1){
+            relHeight = inputHeight - 1;
+        }
+        float scaleWidth = ((float) relWidth) / inputWidth;
+        float scaleHeight = ((float) relHeight) / inputHeight;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth,scaleHeight);
+        try {
+            returnBm = Bitmap.createBitmap(bitmap, 0, 0, inputWidth, inputHeight, matrix, true);
+        } catch (OutOfMemoryError e) {
+        }
+        if (returnBm == null) {
+            returnBm = bitmap;
+        }
+        if (bitmap != returnBm) {
+            bitmap.recycle();
+        }
+        return returnBm;
     }
 
     /**

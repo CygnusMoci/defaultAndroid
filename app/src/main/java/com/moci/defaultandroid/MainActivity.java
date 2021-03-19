@@ -2,38 +2,28 @@ package com.moci.defaultandroid;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.fonts.FontStyle;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.moci.defaultandroid.util.Util;
 import com.moci.defaultandroid.util.mDialog;
 import com.moci.defaultandroid.util.mImg;
-import com.moci.defaultandroid.util.mLog;
-import com.moci.defaultandroid.util.mTool;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -68,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog = new mDialog(this);
         mHandler = new Handler();
 
-        String fileName = mTool.getTime()+"_log.txt";
+        String fileName = Util.getTime()+"_log.txt";
         String filePath = "/storage/emulated/0/defaultAndroid/";
 
         File tfile = new File(filePath);
