@@ -50,7 +50,7 @@ public class InputVideo {
         start = System.currentTimeMillis();
         for (int i = 0; i <videoArr.length; i++) {
             try {
-                videoArr[i] = mImg.getPixelsYUV21(retriever.getFrameAtIndex(i));
+                videoArr[i] = ImgUtil.getPixelsYUV21(retriever.getFrameAtIndex(i));
             }catch (IllegalStateException e){
                 Log.w("moci", "convertYUV21FromRGB: "+i);
                 continue;

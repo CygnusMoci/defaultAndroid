@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 import com.moci.defaultandroid.util.Util;
 import com.moci.defaultandroid.util.mDialog;
-import com.moci.defaultandroid.util.mImg;
+import com.moci.defaultandroid.util.ImgUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -167,10 +167,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //判断手机系统版本号
                 if (Build.VERSION.SDK_INT >= 19) {
                     //4.4及以上系统使用这个方法处理图片
-                    bitmap = mImg.handleImageOnKitKat(this, data);
+                    bitmap = ImgUtil.handleImageOnKitKat(this, data);
                 } else {
                     //4.4以下系统使用这个方法处理图片
-                    bitmap = mImg.handleImageBeforeKitKat(this, data);
+                    bitmap = ImgUtil.handleImageBeforeKitKat(this, data);
                 }
             }
             imageView.setImageBitmap(bitmap);

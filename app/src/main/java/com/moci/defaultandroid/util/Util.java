@@ -3,6 +3,8 @@ package com.moci.defaultandroid.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -17,7 +19,6 @@ import java.util.Date;
  * @description :
  */
 public class Util {
-    public static byte[] img;
     /**
      * 获取时间
      * @return
@@ -121,6 +122,26 @@ public class Util {
     }
 
     /**
+     * 保存字符串
+     * @param file
+     * @param result
+     * @return
+     */
+    private String saveResult(File file ,String result){
+        String msg = result+"\n";
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file,true);
+            fos.write(msg.getBytes());
+            fos.close();
+            return "0";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "-1";
+    }
+
+    /**
      * file转bitmap
      * @param file
      * @return
@@ -128,5 +149,57 @@ public class Util {
     public static Bitmap file2Btimap(File file){
         Bitmap res = BitmapFactory.decodeFile(file.toString());
         return res;
+    }
+
+    /**
+     * 读取asserts文件夹里的数据
+     * @param context
+     * @param fileName
+     * @return
+     */
+    public static byte[] readAssetsData(Context context, String fileName) {
+        try {
+            InputStream is = context.getAssets().open(fileName);
+            int lenght = is.available();
+            byte[] buffer = new byte[lenght];
+            is.read(buffer);
+            is.close();
+            return buffer;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
+     * 读取raw文件
+     * @param context
+     * @param rawId
+     * @return
+     */
+    private byte[] readRawData(Context context, int rawId) {
+        InputStream inputStream = null;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int count = -1;
+        try {
+            inputStream = context.getResources().openRawResource(rawId);
+            while ((count = inputStream.read(buffer)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, count);
+            }
+            byteArrayOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 }

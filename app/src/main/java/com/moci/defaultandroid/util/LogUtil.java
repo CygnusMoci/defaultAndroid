@@ -7,11 +7,11 @@ import android.util.Log;
  * @create : 2020-01-08 10:39
  * @description :
  */
-public class mLog {
-    private static final String CLASS_NAME = mLog.class.getName();
+public class LogUtil {
+    private static final String CLASS_NAME = LogUtil.class.getName();
     public static boolean SHOW_LOG = true;
 
-    private mLog() {
+    private LogUtil() {
     }
     private static String getFunctionName() {
         StackTraceElement[] sts = Thread.currentThread().getStackTrace();

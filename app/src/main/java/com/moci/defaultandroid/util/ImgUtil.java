@@ -33,7 +33,7 @@ import java.nio.ByteBuffer;
  * @create : 2020-01-08 10:50
  * @description :通过handleImageOnKitKat方法返回由系统相册选择的图片
  */
-public class mImg {
+public class ImgUtil {
     private static String mImagePath = "";
 
     //4.4及以上系统使用这个方法处理图片

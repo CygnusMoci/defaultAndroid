@@ -60,7 +60,13 @@ public class FileUtil {
         return null;
     }
 
-
+    /**
+     * 保存mp4文件
+     * @param data
+     * @param fileName
+     * @param dirName
+     * @return
+     */
     public static String saveMp4File(byte[] data,String fileName, String dirName ) {
         if (data == null)
             return null;
@@ -102,6 +108,11 @@ public class FileUtil {
         return null;
     }
 
+    /**
+     * 读取文件md5
+     * @param file
+     * @return
+     */
     public static String getFileMD5(File file) {
         if (!file.isFile()) {
             return null;
